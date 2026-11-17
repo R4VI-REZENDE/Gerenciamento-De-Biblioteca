@@ -1,12 +1,12 @@
 
 const API_URL = "https://localhost:7000/api/Materiais";
 
-const USAR_MOCK = true;
+const USAR_MOCK = false;
 
 const MATERIAIS_INICIAIS = [
-  { id: 1, tipo: "Livro", titulo: "Dom Casmurro", anoPublicacao: 1899, autor: "Machado de Assis", numeroPaginas: 256 },
-  { id: 2, tipo: "Revista", titulo: "Superinteressante", anoPublicacao: 2024, numeroEdicao: 455, mesPublicacao: 3 },
-  { id: 3, tipo: "Revista", titulo: "Piauí", anoPublicacao: 2023, numeroEdicao: 198, mesPublicacao: 11 },
+  { id: 1, tipo: "Livro", titulo: "Dom Casmurro", anoPublicacao: 1899, autor: "Machado de Assis", paginas: 256 },
+  { id: 2, tipo: "Revista", titulo: "Superinteressante", anoPublicacao: 2024, edicao: 455, mesPublicacao: 3 },
+  { id: 3, tipo: "Revista", titulo: "Piauí", anoPublicacao: 2023, edicao: 198, mesPublicacao: 11 },
 ];
 
 function lerMock() {

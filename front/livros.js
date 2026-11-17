@@ -24,7 +24,7 @@ function esconderMensagem() {
 }
 
 function ehLivro(material) {
-  return material.tipo === "Livro" || material.autor !== undefined;
+  return material.tipo === "Livro";
 }
 
 function renderizar(lista) {
@@ -39,8 +39,7 @@ function renderizar(lista) {
 
   lista.forEach((livro) => {
     const linha = document.createElement("tr");
-    const paginas = livro.paginas ?? livro.numeroPaginas;
-    const valores = [livro.titulo, livro.anoPublicacao, livro.autor, paginas];
+    const valores = [livro.titulo, livro.anoPublicacao, livro.autor, livro.paginas];
 
     valores.forEach((valor) => {
       const celula = document.createElement("td");

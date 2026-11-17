@@ -37,7 +37,7 @@ function lerFormulario() {
     if (!Number.isInteger(paginas) || paginas < 1) {
       return { erro: "Informe um número de páginas maior que zero." };
     }
-    return { dados: { titulo, anoPublicacao: ano, autor, numeroPaginas: paginas } };
+    return { dados: { titulo, anoPublicacao: ano, autor, paginas } };
   }
 
   const edicao = Number(document.querySelector("#edicao").value);
@@ -49,7 +49,7 @@ function lerFormulario() {
   if (!Number.isInteger(mes) || mes < 1 || mes > 12) {
     return { erro: "Informe um mês de 1 a 12." };
   }
-  return { dados: { titulo, anoPublicacao: ano, numeroEdicao: edicao, mesPublicacao: mes } };
+  return { dados: { titulo, anoPublicacao: ano, edicao, mesPublicacao: mes } };
 }
 
 async function cadastrar(evento) {

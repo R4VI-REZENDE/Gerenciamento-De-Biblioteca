@@ -25,7 +25,7 @@ function renderizar(lista) {
 
   lista.forEach((revista) => {
     const linha = document.createElement("tr");
-    const valores = [revista.titulo, revista.anoPublicacao, revista.numeroEdicao, revista.mesPublicacao];
+    const valores = [revista.titulo, revista.anoPublicacao, revista.edicao, revista.mesPublicacao];
 
     valores.forEach((valor) => {
       const celula = document.createElement("td");
