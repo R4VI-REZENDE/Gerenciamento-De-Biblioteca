@@ -4,11 +4,6 @@ const grupoLivro = document.querySelector("#grupo-livro");
 const grupoRevista = document.querySelector("#grupo-revista");
 const mensagem = document.querySelector("#mensagem");
 
-function mostrarMensagem(texto, classe) {
-  mensagem.textContent = texto;
-  mensagem.className = "alert " + classe;
-}
-
 function trocarTipo() {
   grupoLivro.classList.toggle("d-none", tipo.value !== "livro");
   grupoRevista.classList.toggle("d-none", tipo.value !== "revista");
@@ -57,18 +52,22 @@ async function cadastrar(evento) {
 
   const { erro, dados } = lerFormulario();
   if (erro) {
-    mostrarMensagem(erro, "alert-danger");
+    mostrarAlerta(mensagem, erro, "alert-danger");
     return;
   }
 
   try {
     await cadastrarMaterial(tipo.value, dados);
 
-    mostrarMensagem("Material cadastrado com sucesso!", "alert-success");
+    mostrarAlerta(mensagem, "Material cadastrado com sucesso!", "alert-success");
     form.reset();
     trocarTipo();
   } catch (e) {
-    mostrarMensagem("Não foi possível cadastrar. Confira se a API está rodando.", "alert-danger");
+    // 400 = a API recusou os dados e explicou o motivo; qualquer outro caso = problema de conexão/servidor
+    const texto = e.status === 400 && e.detalhes.length > 0
+      ? e.detalhes.join(" ")
+      : "Não foi possível cadastrar. Confira se a API está rodando.";
+    mostrarAlerta(mensagem, texto, "alert-danger");
   }
 }
 

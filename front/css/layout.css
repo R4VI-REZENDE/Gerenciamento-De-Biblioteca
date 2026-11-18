@@ -10,7 +10,8 @@ body {
   margin: 0;
 }
 
-.data-sem-menu .menu {
+/* Página inicial: sem menu (os botões da home já navegam) */
+.sem-menu .menu {
   display: none;
 }
 

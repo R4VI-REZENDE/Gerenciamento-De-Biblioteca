@@ -43,22 +43,37 @@ não possua, vá na pasta do projeto, abra a pasta front, procure o arquivo inde
 navegador
 3- Pronto! O projeto já esta rodando
 4- Em caso de erro na API, substitua o endereço que o dotnet run retornar ( ex - http://localhost:5109) pelo que estiver na
-const API_URL = endereçoQueEstaDandoErro e tente novamente
+const API_URL em js/api.js = endereçoQueEstaDandoErro e tente novamente
 
 Integração com a API:
 A integração com a API foi feita por fetch. Nesse sistema, o frontend nunca conversa diretamente com o repositório, a API nos passa
 as rotas para buscarmos os arquivos/informações que o frontend precisa, como os livros e revistas cadastrados. Essas informações são
 guardadas num dictionary no MaterialRepository, e o program.cs libera o CORS, para evitar erros. Toda a comunicação com a API é 
-é concentrada no arquivo api.js, lá tem todas as configurações com rotas e etc que o frotend precisa para trabalhar.
+concentrada no arquivo js/api.js, lá tem todas as configurações com rotas e etc que o frotend precisa para trabalhar.
 
 Endpoints consumidos:
 GET api/Materiais
-POST api/Materiais/Livro
-POST api/Materiais/Revista
+GET api/Materiais/{id}
+POST api/Materiais/livro
+POST api/Materiais/revista
+PUT api/Materiais/livro/{id}
+PUT api/Materiais/revista/{id}
 DELETE api/Materiais/{id}
+POST api/Materiais/{id}/emprestar
 
 Organização das Pastas:
-A pasta front possui todos os arquivos html e js, que conversam entre si, além dos arquivos layout.css e assets/style.css.
+front/
+  index.html, livros.html, revistas.html, cadastro.html   as páginas
+  css/layout.css   cabeçalho, menu e rodapé compartilhados
+  css/home.css     estilos só da página inicial
+  js/layout.js     monta cabeçalho, menu e rodapé em todas as páginas
+  js/api.js        única porta de comunicação com a API (fetch)
+  js/ui.js         funções de interface compartilhadas (alertas, botões, linhas de tabela)
+  js/home.js, livros.js, revistas.js, cadastro.js   um script por página
+
+Os scripts são carregados na ordem layout.js, api.js, ui.js e o script da página
+(cada um usa funções definidas pelos anteriores). Não usamos módulos ES para o
+front continuar funcionando ao abrir o HTML com duplo clique.
 
 Dificuldades:
 Complicações na hora de interligar a API com o frontend por meio do get e post, e entendimento dos endpoints. Também houve uma

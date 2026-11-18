@@ -3,8 +3,8 @@ const corpoTabela = document.querySelector("#tabela-corpo");
 const aviso = document.querySelector("#aviso");
 const mensagem = document.querySelector("#mensagem");
 
-const modalElemento = document.querySelector("#modal-material");
-const modal = new bootstrap.Modal(modalElemento);
+// Modal de detalhes/edição
+const modal = new bootstrap.Modal(document.querySelector("#modal-material"));
 const formulario = document.querySelector("#form-material");
 const modalTitulo = document.querySelector("#modal-titulo");
 const modalErro = document.querySelector("#modal-erro");
@@ -17,8 +17,11 @@ const botaoModoEditar = document.querySelector("#btn-modo-editar");
 const botaoSalvar = document.querySelector("#btn-salvar");
 
 let livros = [];
-let livroAberto = null; 
+let livroAberto = null; // livro atualmente aberto no modal
 let modoEdicao = false;
+
+// ---------- Empréstimos ----------
+// A API não guarda o estado "emprestado"; por enquanto ele fica só neste navegador.
 
 const CHAVE_EMPRESTADOS = "livros-emprestados";
 
@@ -34,7 +37,7 @@ function salvarEmprestados(ids) {
   try {
     localStorage.setItem(CHAVE_EMPRESTADOS, JSON.stringify(ids));
   } catch (e) {
-  
+    // armazenamento indisponível (modo privado, etc.): o empréstimo só não persiste
   }
 }
 
@@ -54,105 +57,46 @@ function desmarcarEmprestado(id) {
   salvarEmprestados(lerEmprestados().filter((item) => item !== id));
 }
 
-function mostrarAviso(texto, classe) {
-  aviso.textContent = texto;
-  aviso.className = "alert " + classe;
-}
+// ---------- Lista ----------
 
-function esconderAviso() {
-  aviso.className = "d-none";
-}
-
-function mostrarMensagem(texto, classe) {
-  mensagem.textContent = texto;
-  mensagem.className = "alert " + classe;
-}
-
-function esconderMensagem() {
-  mensagem.className = "d-none";
-}
-
-function mostrarErroModal(textos) {
-  modalErro.textContent = "";
-  const lista = document.createElement("ul");
-  lista.className = "mb-0";
-  textos.forEach((texto) => {
-    const item = document.createElement("li");
-    item.textContent = texto;
-    lista.append(item);
-  });
-  modalErro.append(lista);
-  modalErro.className = "alert alert-danger";
-}
-
-function esconderErroModal() {
-  modalErro.className = "d-none";
-  modalErro.textContent = "";
-}
-
-function ehLivro(material) {
-  return material.tipo === "Livro";
-}
-
-function criarBotao(texto, classe, rotulo, aoClicar) {
-  const botao = document.createElement("button");
-  botao.type = "button";
-  botao.className = "btn btn-sm " + classe;
-  botao.textContent = texto;
-  botao.setAttribute("aria-label", rotulo);
-  botao.addEventListener("click", aoClicar);
-  return botao;
+function criarSelo(texto) {
+  const selo = document.createElement("span");
+  selo.className = "badge text-bg-warning ms-2";
+  selo.textContent = texto;
+  return selo;
 }
 
 function renderizar(lista) {
   corpoTabela.textContent = "";
 
   if (lista.length === 0) {
-    mostrarAviso("Nenhum livro encontrado.", "alert-warning");
+    mostrarAlerta(aviso, "Nenhum livro encontrado.", "alert-warning");
     return;
   }
 
-  esconderAviso();
+  esconderAlerta(aviso);
 
   lista.forEach((livro) => {
-    const linha = document.createElement("tr");
-    const valores = [livro.titulo, livro.anoPublicacao, livro.autor, livro.paginas];
+    const linha = criarLinha([livro.titulo, livro.anoPublicacao, livro.autor, livro.paginas]);
 
     const emprestado = estaEmprestado(livro);
     if (emprestado) {
       linha.classList.add("table-warning");
+      linha.cells[0].append(criarSelo("Emprestado"));
     }
-
-    valores.forEach((valor, indice) => {
-      const celula = document.createElement("td");
-      celula.textContent = valor;
-
-      if (indice === 0 && emprestado) {
-        const selo = document.createElement("span");
-        selo.className = "badge text-bg-warning ms-2";
-        selo.textContent = "Emprestado";
-        celula.append(selo);
-      }
-
-      linha.append(celula);
-    });
-
-    const celulaAcoes = document.createElement("td");
-    const grupo = document.createElement("div");
-    grupo.className = "d-flex flex-wrap gap-1";
 
     const botaoEmprestar = criarBotao("Emprestar", "btn-outline-success", "Emprestar o livro " + livro.titulo, () => emprestar(livro));
     botaoEmprestar.disabled = emprestado;
 
-    grupo.append(
-      criarBotao("Detalhes", "btn-outline-secondary", "Ver detalhes do livro " + livro.titulo, () => abrirModal(livro, false)),
-      criarBotao("Editar", "btn-outline-primary", "Editar o livro " + livro.titulo, () => abrirModal(livro, true)),
-      botaoEmprestar,
-      criarBotao("Excluir", "btn-outline-danger", "Excluir o livro " + livro.titulo, () => excluir(livro))
+    linha.append(
+      criarCelulaAcoes(
+        criarBotao("Detalhes", "btn-outline-secondary", "Ver detalhes do livro " + livro.titulo, () => abrirModal(livro, false)),
+        criarBotao("Editar", "btn-outline-primary", "Editar o livro " + livro.titulo, () => abrirModal(livro, true)),
+        botaoEmprestar,
+        criarBotao("Excluir", "btn-outline-danger", "Excluir o livro " + livro.titulo, () => excluir(livro))
+      )
     );
 
-    celulaAcoes.append(grupo);
-    linha.append(celulaAcoes);
     corpoTabela.append(linha);
   });
 }
@@ -169,13 +113,24 @@ function filtrar() {
 async function carregarLivros() {
   try {
     const materiais = await listarMateriais();
-    livros = materiais.filter(ehLivro);
+    livros = materiais.filter((material) => material.tipo === "Livro");
     filtrar();
   } catch (erro) {
-    mostrarAviso("Não foi possível carregar os livros. Confira se a API está rodando.", "alert-danger");
+    mostrarAlerta(aviso, "Não foi possível carregar os livros. Confira se a API está rodando.", "alert-danger");
   }
 }
 
+// Falha numa ação sobre um livro: se ele sumiu (404) atualiza a lista, senão mostra o texto recebido.
+async function tratarFalha(erro, textoPadrao) {
+  if (erro.status === 404) {
+    await carregarLivros();
+    mostrarAlerta(mensagem, "Esse livro não existe mais. A lista foi atualizada.", "alert-warning");
+  } else {
+    mostrarAlerta(mensagem, textoPadrao, "alert-danger");
+  }
+}
+
+// ---------- Modal: detalhes e edição ----------
 
 function preencherFormulario(livro) {
   campoTitulo.value = livro.titulo ?? "";
@@ -191,11 +146,12 @@ function definirModo(editar) {
   botaoModoEditar.classList.toggle("d-none", editar);
   modalTitulo.textContent = editar ? "Editar livro" : "Detalhes do livro";
   formulario.classList.remove("was-validated");
-  esconderErroModal();
+  esconderAlerta(modalErro);
 }
 
+// Busca o livro na API (GET /{id}) para abrir sempre com o dado mais recente.
 async function abrirModal(livro, editar) {
-  esconderMensagem();
+  esconderAlerta(mensagem);
 
   try {
     livroAberto = await buscarMaterialPorId(livro.id);
@@ -203,12 +159,7 @@ async function abrirModal(livro, editar) {
     definirModo(editar);
     modal.show();
   } catch (erro) {
-    if (erro.message === "Erro 404") {
-      await carregarLivros();
-      mostrarMensagem("Esse livro não existe mais. A lista foi atualizada.", "alert-warning");
-    } else {
-      mostrarMensagem("Não foi possível carregar o livro. Confira se a API está rodando.", "alert-danger");
-    }
+    await tratarFalha(erro, "Não foi possível carregar o livro. Confira se a API está rodando.");
   }
 }
 
@@ -231,48 +182,44 @@ async function salvar(evento) {
     paginas: Number(campoPaginas.value),
   };
 
-  esconderErroModal();
+  esconderAlerta(modalErro);
   botaoSalvar.disabled = true;
 
   try {
     await atualizarMaterial("livro", livroAberto.id, dados);
     modal.hide();
     await carregarLivros();
-    mostrarMensagem("Livro atualizado com sucesso.", "alert-success");
+    mostrarAlerta(mensagem, "Livro atualizado com sucesso.", "alert-success");
   } catch (erro) {
-    if (erro.message === "Erro 404") {
+    if (erro.status === 404) {
       modal.hide();
-      await carregarLivros();
-      mostrarMensagem("Esse livro não existe mais. A lista foi atualizada.", "alert-warning");
-    } else if (erro.message === "Erro 400" && erro.detalhes && erro.detalhes.length > 0) {
-      mostrarErroModal(erro.detalhes);
+      await tratarFalha(erro);
+    } else if (erro.status === 400 && erro.detalhes.length > 0) {
+      mostrarErros(modalErro, erro.detalhes);
     } else {
-      mostrarErroModal(["Não foi possível salvar. Confira se a API está rodando."]);
+      mostrarErros(modalErro, ["Não foi possível salvar. Confira se a API está rodando."]);
     }
   } finally {
     botaoSalvar.disabled = false;
   }
 }
 
+// ---------- Ações da tabela ----------
+
 async function emprestar(livro) {
   if (!confirm('Tem certeza que deseja emprestar o livro "' + livro.titulo + '"?')) {
     return;
   }
 
-  esconderMensagem();
+  esconderAlerta(mensagem);
 
   try {
     const texto = await emprestarMaterial(livro.id);
     marcarEmprestado(livro.id);
     await carregarLivros();
-    mostrarMensagem(texto || "Livro emprestado com sucesso.", "alert-success");
+    mostrarAlerta(mensagem, texto || "Livro emprestado com sucesso.", "alert-success");
   } catch (erro) {
-    if (erro.message === "Erro 404") {
-      await carregarLivros();
-      mostrarMensagem("Esse livro não existe mais. A lista foi atualizada.", "alert-warning");
-    } else {
-      mostrarMensagem("Não foi possível emprestar. Confira se a API está rodando.", "alert-danger");
-    }
+    await tratarFalha(erro, "Não foi possível emprestar. Confira se a API está rodando.");
   }
 }
 
@@ -281,20 +228,15 @@ async function excluir(livro) {
     return;
   }
 
-  esconderMensagem();
+  esconderAlerta(mensagem);
 
   try {
     await excluirMaterial(livro.id);
     desmarcarEmprestado(livro.id);
     await carregarLivros();
-    mostrarMensagem("Livro excluído com sucesso.", "alert-success");
+    mostrarAlerta(mensagem, "Livro excluído com sucesso.", "alert-success");
   } catch (erro) {
-    if (erro.message === "Erro 404") {
-      await carregarLivros();
-      mostrarMensagem("Esse livro não existe mais. A lista foi atualizada.", "alert-warning");
-    } else {
-      mostrarMensagem("Não foi possível excluir. Confira se a API está rodando.", "alert-danger");
-    }
+    await tratarFalha(erro, "Não foi possível excluir. Confira se a API está rodando.");
   }
 }
 

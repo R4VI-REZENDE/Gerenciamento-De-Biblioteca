@@ -1,4 +1,6 @@
-const paginas = [
+// Monta o cabeçalho, o menu e o rodapé em todas as páginas.
+// Para adicionar uma página ao menu, basta incluí-la na lista abaixo.
+const PAGINAS_MENU = [
   { nome: "Home", arquivo: "index.html" },
   { nome: "Livros", arquivo: "livros.html" },
   { nome: "Revistas", arquivo: "revistas.html" },
@@ -23,7 +25,7 @@ function criarMenu() {
 
   const atual = location.pathname.split("/").pop() || "index.html";
 
-  paginas.forEach((pagina) => {
+  PAGINAS_MENU.forEach((pagina) => {
     const link = document.createElement("a");
     link.href = pagina.arquivo;
     link.textContent = pagina.nome;
@@ -42,7 +44,7 @@ function criarMenu() {
 function criarRodape() {
   const rodape = document.createElement("footer");
   rodape.className = "rodape";
-  rodape.textContent = "Releitura \u00A9 2026 ";
+  rodape.textContent = "Releitura \u00A9 2026";
   return rodape;
 }
 
