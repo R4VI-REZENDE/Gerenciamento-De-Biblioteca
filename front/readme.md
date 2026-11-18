@@ -7,7 +7,9 @@ informações dos itens em formato de tabela, etc...
 
 Integrantes:
 Ravi Rezende Abrão | 114.051
+
 Allan Fernandes | 114.063
+
 Daniel Virgilio | 114.090
 
 Funcionalidades:
