@@ -6,11 +6,13 @@ respectivo arquivo js, que contém alterações visuais e de funcionamento relat
 informações dos itens em formato de tabela, etc...
 
 Integrantes:
+
 Ravi Rezende Abrão | 114.051
 
 Allan Fernandes | 114.063
 
 Daniel Virgilio | 114.090
+
 
 Funcionalidades:
 - Tabelas diferentes para Livros e para Revistas, cada uma contendo as informações necessárias de cada item.
@@ -71,11 +73,6 @@ Testamos o sistema criando livros ainda pela API, pra ver se chegavam a aparecer
 próprio app, excluindo os criados, testamos a responsividade com o dev_tools, e a aba de edição, editando o livro que criamos,
 antes de excluí-lo
 
-O que cada um aprendeu:
-Ravi:
-Aprendi sobre integração da api com o frontend por meio do get e post, mas principalmente sobre customização e interação da página por
-meio do javascript
-
-Allan:
-
-Daniel:
+O que aprendemos:
+Aprendemos principalmente como funciona a integração da API com o frontend por meio do get e post, a utilizar o javascript
+para interações e padronização de layout e a montar uma estrutura para uma web api completa no geral.
