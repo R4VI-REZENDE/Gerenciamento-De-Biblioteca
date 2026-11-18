@@ -1,8 +1,25 @@
 const campoBusca = document.querySelector("#busca");
 const corpoTabela = document.querySelector("#tabela-corpo");
 const aviso = document.querySelector("#aviso");
+const mensagem = document.querySelector("#mensagem");
+
+// Modal de detalhes/edição
+const modalElemento = document.querySelector("#modal-material");
+const modal = new bootstrap.Modal(modalElemento);
+const formulario = document.querySelector("#form-material");
+const modalTitulo = document.querySelector("#modal-titulo");
+const modalErro = document.querySelector("#modal-erro");
+const camposGrupo = document.querySelector("#campos");
+const campoTitulo = document.querySelector("#campo-titulo");
+const campoAno = document.querySelector("#campo-ano");
+const campoEdicao = document.querySelector("#campo-edicao");
+const campoMes = document.querySelector("#campo-mes");
+const botaoModoEditar = document.querySelector("#btn-modo-editar");
+const botaoSalvar = document.querySelector("#btn-salvar");
 
 let revistas = [];
+let revistaAberta = null; // revista atualmente aberta no modal
+let modoEdicao = false;
 
 function mostrarAviso(texto, classe) {
   aviso.textContent = texto;
@@ -11,6 +28,43 @@ function mostrarAviso(texto, classe) {
 
 function esconderAviso() {
   aviso.className = "d-none";
+}
+
+function mostrarMensagem(texto, classe) {
+  mensagem.textContent = texto;
+  mensagem.className = "alert " + classe;
+}
+
+function esconderMensagem() {
+  mensagem.className = "d-none";
+}
+
+function mostrarErroModal(textos) {
+  modalErro.textContent = "";
+  const lista = document.createElement("ul");
+  lista.className = "mb-0";
+  textos.forEach((texto) => {
+    const item = document.createElement("li");
+    item.textContent = texto;
+    lista.append(item);
+  });
+  modalErro.append(lista);
+  modalErro.className = "alert alert-danger";
+}
+
+function esconderErroModal() {
+  modalErro.className = "d-none";
+  modalErro.textContent = "";
+}
+
+function criarBotao(texto, classe, rotulo, aoClicar) {
+  const botao = document.createElement("button");
+  botao.type = "button";
+  botao.className = "btn btn-sm " + classe;
+  botao.textContent = texto;
+  botao.setAttribute("aria-label", rotulo);
+  botao.addEventListener("click", aoClicar);
+  return botao;
 }
 
 function renderizar(lista) {
@@ -33,6 +87,18 @@ function renderizar(lista) {
       linha.append(celula);
     });
 
+    const celulaAcoes = document.createElement("td");
+    const grupo = document.createElement("div");
+    grupo.className = "d-flex flex-wrap gap-1";
+
+    grupo.append(
+      criarBotao("Detalhes", "btn-outline-secondary", "Ver detalhes da revista " + revista.titulo, () => abrirModal(revista, false)),
+      criarBotao("Editar", "btn-outline-primary", "Editar a revista " + revista.titulo, () => abrirModal(revista, true)),
+      criarBotao("Excluir", "btn-outline-danger", "Excluir a revista " + revista.titulo, () => excluir(revista))
+    );
+
+    celulaAcoes.append(grupo);
+    linha.append(celulaAcoes);
     corpoTabela.append(linha);
   });
 }
@@ -53,5 +119,108 @@ async function carregarRevistas() {
   }
 }
 
+// ---------- Modal: detalhes e edição ----------
+
+function preencherFormulario(revista) {
+  campoTitulo.value = revista.titulo ?? "";
+  campoAno.value = revista.anoPublicacao ?? "";
+  campoEdicao.value = revista.edicao ?? "";
+  campoMes.value = revista.mesPublicacao ?? "";
+}
+
+function definirModo(editar) {
+  modoEdicao = editar;
+  camposGrupo.disabled = !editar;
+  botaoSalvar.classList.toggle("d-none", !editar);
+  botaoModoEditar.classList.toggle("d-none", editar);
+  modalTitulo.textContent = editar ? "Editar revista" : "Detalhes da revista";
+  formulario.classList.remove("was-validated");
+  esconderErroModal();
+}
+
+// Busca a revista na API (GET /{id}) para abrir sempre com o dado mais recente.
+async function abrirModal(revista, editar) {
+  esconderMensagem();
+
+  try {
+    revistaAberta = await buscarMaterialPorId(revista.id);
+    preencherFormulario(revistaAberta);
+    definirModo(editar);
+    modal.show();
+  } catch (erro) {
+    if (erro.message === "Erro 404") {
+      await carregarRevistas();
+      mostrarMensagem("Essa revista não existe mais. A lista foi atualizada.", "alert-warning");
+    } else {
+      mostrarMensagem("Não foi possível carregar a revista. Confira se a API está rodando.", "alert-danger");
+    }
+  }
+}
+
+async function salvar(evento) {
+  evento.preventDefault();
+
+  if (!modoEdicao || !revistaAberta) {
+    return;
+  }
+
+  formulario.classList.add("was-validated");
+  if (!formulario.checkValidity()) {
+    return;
+  }
+
+  const dados = {
+    titulo: campoTitulo.value.trim(),
+    anoPublicacao: Number(campoAno.value),
+    edicao: Number(campoEdicao.value),
+    mesPublicacao: Number(campoMes.value),
+  };
+
+  esconderErroModal();
+  botaoSalvar.disabled = true;
+
+  try {
+    await atualizarMaterial("revista", revistaAberta.id, dados);
+    modal.hide();
+    await carregarRevistas();
+    mostrarMensagem("Revista atualizada com sucesso.", "alert-success");
+  } catch (erro) {
+    if (erro.message === "Erro 404") {
+      modal.hide();
+      await carregarRevistas();
+      mostrarMensagem("Essa revista não existe mais. A lista foi atualizada.", "alert-warning");
+    } else if (erro.message === "Erro 400" && erro.detalhes && erro.detalhes.length > 0) {
+      mostrarErroModal(erro.detalhes);
+    } else {
+      mostrarErroModal(["Não foi possível salvar. Confira se a API está rodando."]);
+    }
+  } finally {
+    botaoSalvar.disabled = false;
+  }
+}
+
+async function excluir(revista) {
+  if (!confirm('Excluir a revista "' + revista.titulo + '"?')) {
+    return;
+  }
+
+  esconderMensagem();
+
+  try {
+    await excluirMaterial(revista.id);
+    await carregarRevistas();
+    mostrarMensagem("Revista excluída com sucesso.", "alert-success");
+  } catch (erro) {
+    if (erro.message === "Erro 404") {
+      await carregarRevistas();
+      mostrarMensagem("Essa revista não existe mais. A lista foi atualizada.", "alert-warning");
+    } else {
+      mostrarMensagem("Não foi possível excluir. Confira se a API está rodando.", "alert-danger");
+    }
+  }
+}
+
+botaoModoEditar.addEventListener("click", () => definirModo(true));
+formulario.addEventListener("submit", salvar);
 campoBusca.addEventListener("input", filtrar);
 carregarRevistas();

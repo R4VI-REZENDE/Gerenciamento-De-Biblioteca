@@ -1,7 +1,5 @@
-
-// pra mudar o menu e so digitar na lista de páginas.
 const paginas = [
-  { nome: "Home", arquivo: "home.html" },
+  { nome: "Home", arquivo: "index.html" },
   { nome: "Livros", arquivo: "livros.html" },
   { nome: "Revistas", arquivo: "revistas.html" },
   { nome: "Cadastro", arquivo: "cadastro.html" },

@@ -14,7 +14,7 @@
 
     <label for="busca" class="visually-hidden">Buscar revista pelo título</label>
     <input type="search" id="busca" class="form-control rounded-pill mb-3" style="max-width: 600px" placeholder="Buscar">
-
+    <div id="mensagem" class="d-none" role="alert"></div>
     <div id="aviso" class="d-none" role="alert"></div>
 
     <div class="table-responsive">
@@ -25,6 +25,7 @@
             <th scope="col">Ano</th>
             <th scope="col">Edição</th>
             <th scope="col">Mês</th>
+            <th scope="col">Ações</th>
           </tr>
         </thead>
         <tbody id="tabela-corpo"></tbody>
@@ -32,6 +33,57 @@
     </div>
   </main>
 
+  <!-- Modal único: detalhes (somente leitura) e edição -->
+  <div class="modal fade" id="modal-material" tabindex="-1" aria-labelledby="modal-titulo" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="form-material" novalidate>
+          <div class="modal-header">
+            <h2 class="modal-title fs-5" id="modal-titulo">Revista</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+
+          <div class="modal-body">
+            <div id="modal-erro" class="d-none" role="alert"></div>
+
+            <fieldset id="campos">
+              <div class="mb-3">
+                <label for="campo-titulo" class="form-label">Título</label>
+                <input type="text" id="campo-titulo" class="form-control" required>
+                <div class="invalid-feedback">Informe o título.</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="campo-ano" class="form-label">Ano de publicação</label>
+                <input type="number" id="campo-ano" class="form-control" min="0" required>
+                <div class="invalid-feedback">Informe um ano maior ou igual a zero.</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="campo-edicao" class="form-label">Edição</label>
+                <input type="number" id="campo-edicao" class="form-control" min="1" required>
+                <div class="invalid-feedback">Informe uma edição maior que zero.</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="campo-mes" class="form-label">Mês de publicação (1 a 12)</label>
+                <input type="number" id="campo-mes" class="form-control" min="1" max="12" required>
+                <div class="invalid-feedback">Informe um mês entre 1 e 12.</div>
+              </div>
+            </fieldset>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" id="btn-modo-editar" class="btn btn-outline-primary d-none">Editar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            <button type="submit" id="btn-salvar" class="btn btn-primary d-none">Salvar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="layout.js"></script>
   <script src="api.js"></script>
   <script src="revistas.js"></script>
