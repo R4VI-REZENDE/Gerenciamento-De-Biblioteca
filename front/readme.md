@@ -1,4 +1,5 @@
 --------------------------- README DO FRONTEND ----------------------------
+
 O Frontend do gerenciamento de biblioteca da Releitura (Biblioteca fictícia criada para uso no projeto) consiste basicamente 
 em várias páginas HTML, e um padrão de layout pronto em javascript que acompanha todas as páginas. Cada página HTML possui seu
 respectivo arquivo js, que contém alterações visuais e de funcionamento relativas a cada uma, como o sistema de empréstimo, 
